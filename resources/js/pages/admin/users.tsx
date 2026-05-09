@@ -61,6 +61,25 @@ function toFixedScore(value: string | number) {
     return asNumber.toFixed(1);
 }
 
+function formatRegisteredAt(value: string | null) {
+    if (!value) {
+        return '—';
+    }
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+        return '—';
+    }
+
+    return new Intl.DateTimeFormat(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+    }).format(date);
+}
+
 export default function AdminUsers({ filters, users, summary }: Props) {
     const suspend = (user: AdminUserRow) => {
         router.post(`/admin/users/${user.id}/suspend`, {}, { preserveScroll: true });
@@ -126,6 +145,9 @@ export default function AdminUsers({ filters, users, summary }: Props) {
                                             Status
                                         </th>
                                         <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                            Registered
+                                        </th>
+                                        <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                                             Actions
                                         </th>
                                     </tr>
@@ -156,6 +178,9 @@ export default function AdminUsers({ filters, users, summary }: Props) {
                                                 <td className="px-4 py-3 text-right">
                                                     {user.suspended_at ? <Badge variant="destructive">Suspended</Badge> : <Badge>Active</Badge>}
                                                 </td>
+                                                <td className="px-4 py-3 text-right text-sm text-muted-foreground">
+                                                    {formatRegisteredAt(user.created_at)}
+                                                </td>
                                                 <td className="px-4 py-3">
                                                     <div className="flex justify-end gap-2">
                                                         {user.suspended_at ? (
@@ -173,7 +198,7 @@ export default function AdminUsers({ filters, users, summary }: Props) {
                                         ))
                                     ) : (
                                         <tr>
-                                            <td colSpan={6} className="px-4 py-8 text-center text-sm text-muted-foreground">
+                                            <td colSpan={7} className="px-4 py-8 text-center text-sm text-muted-foreground">
                                                 No users match the current filters.
                                             </td>
                                         </tr>
