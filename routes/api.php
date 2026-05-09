@@ -124,6 +124,7 @@ Route::prefix('v1')->group(function () {
         Route::get('notifications', [NotificationController::class, 'index']);
         Route::post('notifications/{id}/read', [NotificationController::class, 'markAsRead']);
         Route::post('notifications/read-all', [NotificationController::class, 'markAllAsRead']);
+        Route::delete('notifications/clear-all', [NotificationController::class, 'clearAll']);
         Route::get('notifications/unread-count', [NotificationController::class, 'unreadCount']);
     });
 });

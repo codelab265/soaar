@@ -46,3 +46,15 @@ it('returns unread count', function () {
         ->assertSuccessful()
         ->assertJsonPath('unread_count', 1);
 });
+
+it('clears all notifications', function () {
+    $this->user->notify(new PointsChangedNotification(10, 'One'));
+    $this->user->notify(new PointsChangedNotification(20, 'Two'));
+
+    $this->actingAs($this->user, 'sanctum')
+        ->deleteJson('/api/v1/notifications/clear-all')
+        ->assertSuccessful()
+        ->assertJsonPath('message', 'All notifications cleared.');
+
+    expect($this->user->notifications()->count())->toBe(0);
+});

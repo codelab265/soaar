@@ -38,4 +38,11 @@ class NotificationController
             'unread_count' => $request->user()->unreadNotifications()->count(),
         ]);
     }
+
+    public function clearAll(Request $request): JsonResponse
+    {
+        $request->user()->notifications()->delete();
+
+        return response()->json(['message' => 'All notifications cleared.']);
+    }
 }
