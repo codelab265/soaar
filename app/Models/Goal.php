@@ -28,6 +28,10 @@ class Goal extends Model
         'deadline',
         'status',
         'accountability_partner_id',
+        'proof_request_message',
+        'proof_submission',
+        'proof_requested_at',
+        'proof_submitted_at',
     ];
 
     /**
@@ -45,6 +49,8 @@ class Goal extends Model
         return [
             'status' => GoalStatus::class,
             'deadline' => 'date',
+            'proof_requested_at' => 'datetime',
+            'proof_submitted_at' => 'datetime',
         ];
     }
 
@@ -70,6 +76,14 @@ class Goal extends Model
     public function objectives(): HasMany
     {
         return $this->hasMany(Objective::class);
+    }
+
+    /**
+     * @return HasMany<Task, $this>
+     */
+    public function tasks(): HasMany
+    {
+        return $this->hasMany(Task::class);
     }
 
     /**

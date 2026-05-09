@@ -8,7 +8,7 @@ class CompleteTaskRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->id === $this->route('task')->objective->goal->user_id;
+        return $this->user()->id === $this->route('task')->user_id;
     }
 
     /**

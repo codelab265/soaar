@@ -33,6 +33,48 @@ it('creates a task', function () {
         ->assertJsonPath('data.points_value', 5);
 });
 
+it('creates an independent task', function () {
+    $this->actingAs($this->user, 'sanctum')
+        ->postJson('/api/v1/tasks', [
+            'title' => 'Standalone task',
+            'difficulty' => 'simple',
+        ])
+        ->assertCreated()
+        ->assertJsonPath('data.title', 'Standalone task')
+        ->assertJsonPath('data.goal_id', null)
+        ->assertJsonPath('data.objective_id', null);
+});
+
+it('creates a task linked to a goal without objective', function () {
+    $this->actingAs($this->user, 'sanctum')
+        ->postJson('/api/v1/tasks', [
+            'title' => 'Goal-level task',
+            'difficulty' => 'medium',
+            'goal_id' => $this->goal->id,
+        ])
+        ->assertCreated()
+        ->assertJsonPath('data.goal_id', $this->goal->id)
+        ->assertJsonPath('data.objective_id', null);
+});
+
+it('lists today tasks for the authenticated user', function () {
+    Task::factory()->for($this->objective)->create([
+        'scheduled_date' => now()->toDateString(),
+    ]);
+
+    $otherUser = User::factory()->create();
+    $otherGoal = Goal::factory()->for($otherUser)->create();
+    $otherObjective = Objective::factory()->for($otherGoal)->create();
+    Task::factory()->for($otherObjective)->create([
+        'scheduled_date' => now()->toDateString(),
+    ]);
+
+    $this->actingAs($this->user, 'sanctum')
+        ->getJson('/api/v1/tasks/today')
+        ->assertSuccessful()
+        ->assertJsonCount(1, 'data');
+});
+
 it('updates a task', function () {
     $task = Task::factory()->for($this->objective)->create();
 

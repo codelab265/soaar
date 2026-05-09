@@ -21,6 +21,7 @@ class PartnerRequestResource extends JsonResource
             'responded_at' => $this->responded_at?->toIso8601String(),
             'goal' => new GoalResource($this->whenLoaded('goal')),
             'requester' => new UserResource($this->whenLoaded('requester')),
+            'partner' => new UserResource($this->whenLoaded('partner')),
             'created_at' => $this->created_at->toIso8601String(),
         ];
     }

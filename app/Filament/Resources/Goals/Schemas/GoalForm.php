@@ -17,6 +17,8 @@ class GoalForm
             ->components([
                 Select::make('user_id')
                     ->relationship('user', 'name')
+                    ->searchable()
+                    ->preload()
                     ->required(),
                 TextInput::make('title')
                     ->required(),
@@ -33,7 +35,9 @@ class GoalForm
                     ->default('active')
                     ->required(),
                 Select::make('accountability_partner_id')
-                    ->relationship('accountabilityPartner', 'name'),
+                    ->relationship('accountabilityPartner', 'name')
+                    ->searchable()
+                    ->preload(),
             ]);
     }
 }

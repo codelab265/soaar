@@ -25,6 +25,16 @@ class SubscriptionController
         return (new SubscriptionResource($subscription))->response();
     }
 
+    public function history(Request $request): JsonResponse
+    {
+        $subscriptions = $request->user()
+            ->subscriptions()
+            ->latest('starts_at')
+            ->get();
+
+        return SubscriptionResource::collection($subscriptions)->response();
+    }
+
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([

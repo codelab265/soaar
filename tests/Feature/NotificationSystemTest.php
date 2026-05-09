@@ -1,8 +1,11 @@
 <?php
 
+use App\Enums\GoalStatus;
 use App\Enums\StreakType;
+use App\Models\Goal;
 use App\Models\Streak;
 use App\Models\User;
+use App\Notifications\DeadlineApproachingNotification;
 use App\Notifications\InactivityNotification;
 use App\Notifications\StreakAtRiskNotification;
 use Illuminate\Support\Facades\Notification;
@@ -81,4 +84,26 @@ it('inactivity notification contains correct data', function () {
 
     expect($data['inactive_days'])->toBe(3)
         ->and($data['message'])->toContain('3 day(s)');
+});
+
+it('sends deadline approaching notifications for goals due in two days', function () {
+    Notification::fake();
+
+    $dueSoonUser = User::factory()->create();
+    Goal::factory()->for($dueSoonUser)->create([
+        'status' => GoalStatus::Active,
+        'deadline' => now()->addDays(2)->toDateString(),
+    ]);
+
+    $laterUser = User::factory()->create();
+    Goal::factory()->for($laterUser)->create([
+        'status' => GoalStatus::Active,
+        'deadline' => now()->addDays(5)->toDateString(),
+    ]);
+
+    $this->artisan('app:send-deadline-approaching-notifications')
+        ->assertSuccessful();
+
+    Notification::assertSentTo($dueSoonUser, DeadlineApproachingNotification::class);
+    Notification::assertNotSentTo($laterUser, DeadlineApproachingNotification::class);
 });

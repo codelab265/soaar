@@ -20,6 +20,8 @@ class Task extends Model
      * @var list<string>
      */
     protected $fillable = [
+        'user_id',
+        'goal_id',
         'objective_id',
         'title',
         'difficulty',
@@ -61,6 +63,22 @@ class Task extends Model
     public function objective(): BelongsTo
     {
         return $this->belongsTo(Objective::class);
+    }
+
+    /**
+     * @return BelongsTo<Goal, $this>
+     */
+    public function goal(): BelongsTo
+    {
+        return $this->belongsTo(Goal::class);
+    }
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     /**

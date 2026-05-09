@@ -58,5 +58,6 @@ it('rejects enrollment with insufficient points', function () {
         ->postJson("/api/v1/courses/{$course->id}/enroll", [
             'payment_method' => 'points',
         ])
-        ->assertStatus(500); // InvalidArgumentException
+        ->assertUnprocessable()
+        ->assertJsonStructure(['message']);
 });

@@ -84,3 +84,31 @@ it('auto-approve command processes old pending goals', function () {
     expect($oldGoal->fresh()->status)->toBe(GoalStatus::VerifiedCompleted)
         ->and($recentGoal->fresh()->status)->toBe(GoalStatus::PendingVerification);
 });
+
+it('partner can request proof on a pending goal', function () {
+    $partner = User::factory()->create();
+    $goal = Goal::factory()->for($this->user)->create([
+        'status' => GoalStatus::PendingVerification,
+        'accountability_partner_id' => $partner->id,
+    ]);
+
+    $result = $this->service->requestProof($goal, 'Share screenshots of the completed work.');
+
+    expect($result->proof_request_message)->toBe('Share screenshots of the completed work.')
+        ->and($result->proof_requested_at)->not->toBeNull();
+});
+
+it('goal owner can submit proof after it is requested', function () {
+    $partner = User::factory()->create();
+    $goal = Goal::factory()->for($this->user)->create([
+        'status' => GoalStatus::PendingVerification,
+        'accountability_partner_id' => $partner->id,
+        'proof_requested_at' => now(),
+        'proof_request_message' => 'Need proof.',
+    ]);
+
+    $result = $this->service->submitProof($goal, 'Here is the proof payload.');
+
+    expect($result->proof_submission)->toBe('Here is the proof payload.')
+        ->and($result->proof_submitted_at)->not->toBeNull();
+});

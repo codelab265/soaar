@@ -2,33 +2,28 @@ import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
-import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-react';
+import { type SharedData } from '@/types';
+import { Link, usePage } from '@inertiajs/react';
+import {
+    CreditCard,
+    Flag,
+    LayoutGrid,
+    ListChecks,
+    Megaphone,
+    Package,
+    ShieldCheck,
+    Target,
+    Trophy,
+    Users,
+} from 'lucide-react';
 import AppLogo from './app-logo';
 
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        url: '/dashboard',
-        icon: LayoutGrid,
-    },
-];
-
-const footerNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        url: 'https://github.com/laravel/react-starter-kit',
-        icon: Folder,
-    },
-    {
-        title: 'Documentation',
-        url: 'https://laravel.com/docs/starter-kits',
-        icon: BookOpen,
-    },
-];
+const footerNavItems = [];
 
 export function AppSidebar() {
+    const { auth } = usePage<SharedData>().props;
+    const isAdmin = Boolean((auth.user as unknown as { is_admin?: boolean })?.is_admin);
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
@@ -44,7 +39,98 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
+                <NavMain
+                    label="Platform"
+                    items={[
+                        {
+                            title: 'Dashboard',
+                            url: '/dashboard',
+                            icon: LayoutGrid,
+                        },
+                    ]}
+                />
+
+                {isAdmin ? (
+                    <>
+                        <NavMain
+                            label="Admin"
+                            items={[
+                                {
+                                    title: 'Leaderboard',
+                                    url: '/admin/leaderboard',
+                                    icon: Trophy,
+                                },
+                                {
+                                    title: 'Users',
+                                    url: '/admin/users',
+                                    icon: Users,
+                                },
+                                {
+                                    title: 'Send Notification',
+                                    url: '/admin/notifications/global',
+                                    icon: Megaphone,
+                                },
+                            ]}
+                        />
+
+                        <NavMain
+                            label="Content"
+                            items={[
+                                {
+                                    title: 'Partner Requests',
+                                    url: '/admin/partner-requests',
+                                    icon: ShieldCheck,
+                                },
+                                {
+                                    title: 'Goals',
+                                    url: '/admin/goals',
+                                    icon: Flag,
+                                },
+                                {
+                                    title: 'Objectives',
+                                    url: '/admin/objectives',
+                                    icon: Target,
+                                },
+                                {
+                                    title: 'Tasks',
+                                    url: '/admin/tasks',
+                                    icon: ListChecks,
+                                },
+                                {
+                                    title: 'Challenges',
+                                    url: '/admin/challenges',
+                                    icon: Trophy,
+                                },
+                                {
+                                    title: 'Courses',
+                                    url: '/admin/courses',
+                                    icon: Package,
+                                },
+                            ]}
+                        />
+
+                        <NavMain
+                            label="Finance & Activity"
+                            items={[
+                                {
+                                    title: 'Subscriptions',
+                                    url: '/admin/subscriptions',
+                                    icon: CreditCard,
+                                },
+                                {
+                                    title: 'Point Transactions',
+                                    url: '/admin/point-transactions',
+                                    icon: CreditCard,
+                                },
+                                {
+                                    title: 'Streaks',
+                                    url: '/admin/streaks',
+                                    icon: ListChecks,
+                                },
+                            ]}
+                        />
+                    </>
+                ) : null}
             </SidebarContent>
 
             <SidebarFooter>

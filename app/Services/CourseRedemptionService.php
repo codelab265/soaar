@@ -86,4 +86,45 @@ class CourseRedemptionService
             'enrolled_at' => now(),
         ]);
     }
+
+    /**
+     * Finalize an enrollment after an external payment (e.g. PayChangu webhook verification).
+     *
+     * @throws InvalidArgumentException
+     */
+    public function finalizeExternalPaymentEnrollment(
+        User $user,
+        Course $course,
+        PaymentMethod $paymentMethod,
+        int $pointsUsed,
+        int $amountPaid,
+    ): CourseEnrollment {
+        $existing = CourseEnrollment::query()
+            ->where('user_id', $user->id)
+            ->where('course_id', $course->id)
+            ->first();
+
+        if ($existing) {
+            return $existing;
+        }
+
+        if ($pointsUsed > 0) {
+            if ($user->total_points < $pointsUsed) {
+                throw new InvalidArgumentException(
+                    "Insufficient points. Required: {$pointsUsed}, available: {$user->total_points}."
+                );
+            }
+
+            $user->decrement('total_points', $pointsUsed);
+        }
+
+        return CourseEnrollment::create([
+            'user_id' => $user->id,
+            'course_id' => $course->id,
+            'payment_method' => $paymentMethod,
+            'points_used' => $pointsUsed,
+            'amount_paid' => $amountPaid,
+            'enrolled_at' => now(),
+        ]);
+    }
 }

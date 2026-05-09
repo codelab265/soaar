@@ -18,6 +18,8 @@ class TaskForm
             ->components([
                 Select::make('objective_id')
                     ->relationship('objective', 'title')
+                    ->searchable()
+                    ->preload()
                     ->required(),
                 TextInput::make('title')
                     ->required(),

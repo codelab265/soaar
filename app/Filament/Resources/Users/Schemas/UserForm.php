@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Users\Schemas;
 
+use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -19,6 +20,7 @@ class UserForm
                     ->schema([
                         FileUpload::make('profile_picture')
                             ->image()
+                            ->disk('public')
                             ->directory('profile-pictures')
                             ->visibility('public')
                             ->imageEditor()
@@ -39,6 +41,9 @@ class UserForm
                             ->dehydrated(fn (?string $state): bool => filled($state))
                             ->required(fn (string $operation): bool => $operation === 'create'),
                         Toggle::make('is_admin'),
+                        DateTimePicker::make('suspended_at')
+                            ->label('Suspended at')
+                            ->seconds(false),
                     ]),
                 Section::make('Stats')
                     ->schema([

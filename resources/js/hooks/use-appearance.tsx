@@ -17,13 +17,21 @@ const handleSystemThemeChange = () => {
     applyTheme(currentAppearance || 'system');
 };
 
+let hasInitializedTheme = false;
+
 export function initializeTheme() {
+    if (hasInitializedTheme) {
+        return;
+    }
+
     const savedAppearance = (localStorage.getItem('appearance') as Appearance) || 'system';
 
     applyTheme(savedAppearance);
 
     // Add the event listener for system theme changes...
     mediaQuery.addEventListener('change', handleSystemThemeChange);
+
+    hasInitializedTheme = true;
 }
 
 export function useAppearance() {

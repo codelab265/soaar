@@ -29,10 +29,12 @@ class User extends Authenticatable implements FilamentUser
         'password',
         'is_admin',
         'profile_picture',
+        'fcm_token',
         'discipline_score',
         'total_points',
         'current_streak',
         'longest_streak',
+        'suspended_at',
     ];
 
     /**
@@ -70,6 +72,7 @@ class User extends Authenticatable implements FilamentUser
             'password' => 'hashed',
             'is_admin' => 'boolean',
             'discipline_score' => 'decimal:2',
+            'suspended_at' => 'datetime',
         ];
     }
 
@@ -87,6 +90,14 @@ class User extends Authenticatable implements FilamentUser
     public function goals(): HasMany
     {
         return $this->hasMany(Goal::class);
+    }
+
+    /**
+     * @return HasMany<Task, $this>
+     */
+    public function tasks(): HasMany
+    {
+        return $this->hasMany(Task::class);
     }
 
     /**

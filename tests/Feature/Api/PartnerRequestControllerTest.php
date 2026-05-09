@@ -34,6 +34,21 @@ it('lists incoming partner requests', function () {
         ->assertJsonCount(1, 'data');
 });
 
+it('lists outgoing partner requests', function () {
+    AccountabilityPartnerRequest::create([
+        'goal_id' => $this->goal->id,
+        'requester_id' => $this->owner->id,
+        'partner_id' => $this->partner->id,
+        'status' => PartnerRequestStatus::Pending,
+    ]);
+
+    $this->actingAs($this->owner, 'sanctum')
+        ->getJson('/api/v1/partner-requests/outgoing')
+        ->assertSuccessful()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.partner.username', $this->partner->username);
+});
+
 it('accepts a partner request', function () {
     $request = AccountabilityPartnerRequest::create([
         'goal_id' => $this->goal->id,

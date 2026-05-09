@@ -143,10 +143,10 @@ class TaskCompletionService
     }
 
     /**
-     * Resolve the user who owns the task (through objective → goal → user).
+     * Resolve the user who owns the task.
      */
     private function resolveUser(Task $task): User
     {
-        return $task->objective->goal->user;
+        return $task->user;
     }
 }

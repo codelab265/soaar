@@ -15,6 +15,8 @@ class ObjectiveForm
             ->components([
                 Select::make('goal_id')
                     ->relationship('goal', 'title')
+                    ->searchable()
+                    ->preload()
                     ->required(),
                 TextInput::make('title')
                     ->required(),

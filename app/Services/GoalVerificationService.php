@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Enums\GoalStatus;
 use App\Models\Goal;
 use App\Models\PointTransaction;
+use App\Notifications\GoalProofRequestedNotification;
+use App\Notifications\GoalProofSubmittedNotification;
 use App\Notifications\PartnerCheckInNotification;
 use InvalidArgumentException;
 
@@ -63,6 +65,50 @@ class GoalVerificationService
         $goal->update(['status' => GoalStatus::Active]);
 
         $this->pointsService->applyPartnerRejectionPenalty($goal->user, $goal);
+
+        return $goal->fresh();
+    }
+
+    /**
+     * Partner requests additional proof while goal is pending verification.
+     */
+    public function requestProof(Goal $goal, string $message): Goal
+    {
+        if ($goal->status !== GoalStatus::PendingVerification) {
+            throw new InvalidArgumentException('Only goals pending verification can receive proof requests.');
+        }
+
+        $goal->update([
+            'proof_request_message' => $message,
+            'proof_requested_at' => now(),
+        ]);
+
+        $goal->user->notify(new GoalProofRequestedNotification($goal, $message));
+
+        return $goal->fresh();
+    }
+
+    /**
+     * Goal owner submits proof for a pending verification request.
+     */
+    public function submitProof(Goal $goal, string $submission): Goal
+    {
+        if ($goal->status !== GoalStatus::PendingVerification) {
+            throw new InvalidArgumentException('Only goals pending verification can accept proof submissions.');
+        }
+
+        if (! $goal->proof_requested_at) {
+            throw new InvalidArgumentException('No proof has been requested for this goal.');
+        }
+
+        $goal->update([
+            'proof_submission' => $submission,
+            'proof_submitted_at' => now(),
+        ]);
+
+        if ($goal->accountabilityPartner) {
+            $goal->accountabilityPartner->notify(new GoalProofSubmittedNotification($goal));
+        }
 
         return $goal->fresh();
     }

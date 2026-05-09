@@ -40,3 +40,20 @@ it('cancels a subscription', function () {
         ->assertSuccessful()
         ->assertJsonPath('data.status', 'cancelled');
 });
+
+it('returns subscription history', function () {
+    $this->actingAs($this->user, 'sanctum')
+        ->postJson('/api/v1/subscription', ['tier' => 'premium']);
+
+    $this->actingAs($this->user, 'sanctum')
+        ->postJson('/api/v1/subscription/cancel');
+
+    $this->actingAs($this->user, 'sanctum')
+        ->postJson('/api/v1/subscription', ['tier' => 'premium']);
+
+    $this->actingAs($this->user, 'sanctum')
+        ->getJson('/api/v1/subscriptions')
+        ->assertSuccessful()
+        ->assertJsonCount(2, 'data')
+        ->assertJsonPath('data.0.tier', 'premium');
+});

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\PointTransactionType;
 use App\Models\User;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
 class LeaderboardService
@@ -32,13 +33,23 @@ class LeaderboardService
      *
      * @return int Number of bonuses awarded
      */
-    public function awardTopTenBonus(): int
+    public function awardTopTenBonus(?Carbon $date = null): int
     {
+        $date ??= now();
         $topUsers = $this->getLeaderboard(10);
         $count = 0;
 
         foreach ($topUsers as $user) {
             if ($user->total_points <= 0) {
+                continue;
+            }
+
+            $alreadyAwardedToday = $user->pointTransactions()
+                ->where('type', PointTransactionType::LeaderboardReward)
+                ->whereDate('created_at', $date->toDateString())
+                ->exists();
+
+            if ($alreadyAwardedToday) {
                 continue;
             }
 

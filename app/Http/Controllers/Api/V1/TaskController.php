@@ -12,6 +12,7 @@ use App\Services\TaskCompletionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Carbon;
 
 class TaskController
 {
@@ -28,6 +29,20 @@ class TaskController
         );
     }
 
+    public function today(Request $request): AnonymousResourceCollection
+    {
+        $today = Carbon::today();
+
+        $tasks = Task::query()
+            ->whereDate('scheduled_date', $today)
+            ->where('user_id', $request->user()->id)
+            ->with(['objective:id,goal_id,title', 'goal:id,title'])
+            ->orderBy('scheduled_date')
+            ->get();
+
+        return TaskResource::collection($tasks);
+    }
+
     public function store(StoreTaskRequest $request, Objective $objective): JsonResponse
     {
         $data = $request->validated();
@@ -36,7 +51,31 @@ class TaskController
             $data['points_value'] = TaskDifficulty::from($data['difficulty'])->points();
         }
 
-        $task = $objective->tasks()->create(array_merge($data, [
+        $task = Task::query()->create(array_merge($data, [
+            'user_id' => $request->user()->id,
+            'goal_id' => $objective->goal_id,
+            'objective_id' => $objective->id,
+            'minimum_duration' => $data['minimum_duration'] ?? 5,
+            'repetition_count' => 0,
+            'repetition_decay' => 1.00,
+        ]));
+
+        return (new TaskResource($task))
+            ->response()
+            ->setStatusCode(201);
+    }
+
+    public function storeIndependent(StoreTaskRequest $request): JsonResponse
+    {
+        $data = $request->validated();
+
+        if (! isset($data['points_value']) && isset($data['difficulty'])) {
+            $data['points_value'] = TaskDifficulty::from($data['difficulty'])->points();
+        }
+
+        $task = Task::query()->create(array_merge($data, [
+            'user_id' => $request->user()->id,
+            'minimum_duration' => $data['minimum_duration'] ?? 5,
             'repetition_count' => 0,
             'repetition_decay' => 1.00,
         ]));
@@ -48,7 +87,7 @@ class TaskController
 
     public function update(Request $request, Task $task): TaskResource
     {
-        abort_unless($task->objective->goal->user_id === $request->user()->id, 403);
+        abort_unless($task->user_id === $request->user()->id, 403);
 
         $task->update($request->validate([
             'title' => ['sometimes', 'string', 'max:255'],
@@ -60,7 +99,7 @@ class TaskController
 
     public function destroy(Request $request, Task $task): JsonResponse
     {
-        abort_unless($task->objective->goal->user_id === $request->user()->id, 403);
+        abort_unless($task->user_id === $request->user()->id, 403);
 
         $task->delete();
 

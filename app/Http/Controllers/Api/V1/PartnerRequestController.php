@@ -45,6 +45,16 @@ class PartnerRequestController
         return PartnerRequestResource::collection($requests);
     }
 
+    public function outgoing(Request $request): AnonymousResourceCollection
+    {
+        $requests = AccountabilityPartnerRequest::where('requester_id', $request->user()->id)
+            ->with(['goal', 'partner'])
+            ->latest()
+            ->paginate(15);
+
+        return PartnerRequestResource::collection($requests);
+    }
+
     public function accept(Request $request, AccountabilityPartnerRequest $partnerRequest): PartnerRequestResource
     {
         abort_unless($partnerRequest->partner_id === $request->user()->id, 403);
