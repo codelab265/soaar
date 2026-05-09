@@ -26,6 +26,10 @@ class UsersTable
                 TextColumn::make('email')
                     ->label('Email address')
                     ->searchable(),
+                TextColumn::make('created_at')
+                    ->label('Registered')
+                    ->dateTime('M j, Y g:i A')
+                    ->sortable(),
                 IconColumn::make('is_admin')
                     ->boolean(),
                 IconColumn::make('suspended_at')
@@ -43,11 +47,6 @@ class UsersTable
                 TextColumn::make('longest_streak')
                     ->numeric()
                     ->sortable(),
-                TextColumn::make('created_at')
-                    ->label('Registered')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(),
                 TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
